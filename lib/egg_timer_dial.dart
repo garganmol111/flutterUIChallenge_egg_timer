@@ -2,63 +2,151 @@ import 'package:egg_timer/egg_timer_knob.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
+import 'package:fluttery/gestures.dart';
+
 final Color GRADIENT_TOP = const Color(0xFFF5F5F5);
 final Color GRADIENT_BOTTOM = const Color(0xFFE8E8E8);
 
 class EggTimerDial extends StatefulWidget {
-  EggTimerDial({Key key}) : super(key: key);
+  final Duration currentTime;
+  final Duration maxTime;
+  final int ticksPerSection;
+  final Function(Duration) onTimeSelected;
+
+  EggTimerDial({
+    Key key,
+    this.currentTime = const Duration(minutes: 0),
+    this.maxTime = const Duration(minutes: 35),
+    this.ticksPerSection = 5,
+    this.onTimeSelected,
+  }) : super(key: key);
 
   _EggTimerDialState createState() => _EggTimerDialState();
 }
 
 class _EggTimerDialState extends State<EggTimerDial> {
+  // % rotation according to the current time
+  _rotationPercent() {
+    return widget.currentTime.inSeconds / widget.maxTime.inSeconds;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      child: Padding(
-        padding: const EdgeInsets.only(left: 45.0, right: 45.0),
-        child: AspectRatio(
-            aspectRatio: 1.0,
+    return DialTurnGestureDetector(
+      currentTime: widget.currentTime,
+      maxTime: widget.maxTime,
+      onTimeSelected: widget.onTimeSelected,
+      child: Container(
+        width: double.infinity,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 45.0, right: 45.0),
+          child: AspectRatio(
+              aspectRatio: 1.0,
 
-            //Outer Circle
-            child: Container(
-              decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [GRADIENT_TOP, GRADIENT_BOTTOM],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                        color: const Color(0x44000000),
-                        blurRadius: 2.0,
-                        spreadRadius: 1.0,
-                        offset: const Offset(0.0, 1.0))
-                  ]),
-
-              //Inner Circle with time selector knob
-              child: Stack(
-                children: <Widget>[
-                  Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    padding: const EdgeInsets.all(55.0),
-                    child: CustomPaint(
-                      painter: TickPainter(),
+              //Outer Circle
+              child: Container(
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [GRADIENT_TOP, GRADIENT_BOTTOM],
                     ),
-                  ),
+                    boxShadow: [
+                      BoxShadow(
+                          color: const Color(0x44000000),
+                          blurRadius: 2.0,
+                          spreadRadius: 1.0,
+                          offset: const Offset(0.0, 1.0))
+                    ]),
 
-                  //from egg_timer_knob.dart, creates the time selector knob widget
-                  Padding(
-                    padding: const EdgeInsets.all(65.0),
-                    child: EggTimerKnob(),
-                  ),
-                ],
-              ),
-            )),
+                //Inner Circle with time selector knob
+                child: Stack(
+                  children: <Widget>[
+                    Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      padding: const EdgeInsets.all(55.0),
+                      child: CustomPaint(
+                        painter: TickPainter(
+                          tickCount: widget.maxTime.inMinutes,
+                          ticksPerSection: widget.ticksPerSection,
+                        ),
+                      ),
+                    ),
+
+                    //from egg_timer_knob.dart, creates the time selector knob widget
+                    Padding(
+                      padding: const EdgeInsets.all(65.0),
+                      child: EggTimerDialKnob(
+                        rotationPercent: _rotationPercent(),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ),
       ),
+    );
+  }
+}
+
+class DialTurnGestureDetector extends StatefulWidget {
+
+  final currentTime;
+  final maxTime;
+  final child;
+  final Function(Duration) onTimeSelected;
+
+  DialTurnGestureDetector({
+    Key key, 
+    this.child,
+    this.currentTime,
+    this.maxTime,
+    this.onTimeSelected
+  }) : super(key: key);
+
+  _DialTurnGestureDetectorState createState() =>
+      _DialTurnGestureDetectorState();
+}
+
+class _DialTurnGestureDetectorState extends State<DialTurnGestureDetector> {
+
+  PolarCoord startDragCoord;
+  Duration startDragTime;
+
+  _onRadialDragStart(PolarCoord coord) {
+    startDragCoord = coord;
+    startDragTime = widget.currentTime;
+  }
+
+  _onRadialDragUpdate(PolarCoord coord) {
+    if(startDragCoord != null) {
+
+      //calculates the angle difference b/w start position and end position, wil be used when moving time selector.
+      final andgleDiff = coord.angle - startDragCoord.angle;
+      final anglePercent = andgleDiff / (2 * math.pi);
+      final timeDiffInSeconds = (anglePercent * widget.maxTime.inSeconds).round();
+      final newTime = Duration(seconds: startDragTime.inSeconds + timeDiffInSeconds);
+
+      
+
+      widget.onTimeSelected(newTime);
+    }
+  }
+
+  _onRadialDragEnd() {
+    startDragCoord = null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    //RadialDialGestureDetector from Fluttery package, return polar coordinates w.r.t. center
+    return RadialDragGestureDetector(
+      onRadialDragStart: _onRadialDragStart,
+      onRadialDragEnd: _onRadialDragEnd,
+      onRadialDragUpdate: _onRadialDragUpdate,
+      child: widget.child,
     );
   }
 }

@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 final Color GRADIENT_TOP = const Color(0xFFF5F5F5);
 final Color GRADIENT_BOTTOM = const Color(0xFFE8E8E8);
 
-class EggTimerKnob extends StatefulWidget {
-  EggTimerKnob({Key key}) : super(key: key);
+class EggTimerDialKnob extends StatefulWidget {
+  EggTimerDialKnob({Key key, this.rotationPercent}) : super(key: key);
 
-  _EggTimerKnobState createState() => _EggTimerKnobState();
+  final rotationPercent;
+
+  _EggTimerDialKnobState createState() => _EggTimerDialKnobState();
 }
 
-class _EggTimerKnobState extends State<EggTimerKnob> {
+class _EggTimerDialKnobState extends State<EggTimerDialKnob> {
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -19,10 +23,13 @@ class _EggTimerKnobState extends State<EggTimerKnob> {
           width: double.infinity,
           height: double.infinity,
           child: CustomPaint(
-            painter: ArrowPainter(),
+            painter: ArrowPainter(
+              rotationPercent: widget.rotationPercent,
+            ),
           ),
         ),
 
+        //Knob
         Container(
           decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -50,12 +57,17 @@ class _EggTimerKnobState extends State<EggTimerKnob> {
                     width: 1.5,
                   )),
               child: Center(
-                child: Image.network(
-                  //URL with flutter logo
-                  'https://avatars3.githubusercontent.com/u/14101776?s=400&v=4',
-                  width: 50.0,
-                  height: 50.0,
-                  color: Colors.black,
+                child: Transform(
+                  //rotate the logo according to current time
+                  transform: Matrix4.rotationZ(2 * math.pi * widget.rotationPercent),
+                  alignment: Alignment.center,
+                  child: Image.network(
+                    //URL with flutter logo
+                    'https://avatars3.githubusercontent.com/u/14101776?s=400&v=4',
+                    width: 50.0,
+                    height: 50.0,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ),
@@ -68,9 +80,10 @@ class _EggTimerKnobState extends State<EggTimerKnob> {
 
 class ArrowPainter extends CustomPainter {
   final Paint dialArrowPaint;
+  final double rotationPercent;
 
   //Used to define painter which will fill the traingle selector
-  ArrowPainter() : dialArrowPaint = new Paint() {
+  ArrowPainter({this.rotationPercent = 0}) : dialArrowPaint = new Paint() {
     dialArrowPaint.color = Colors.black;
 
     //we use style because we need to draw a shape 
@@ -82,15 +95,19 @@ class ArrowPainter extends CustomPainter {
     //to save the canvas, we'll restore it afterwords
     canvas.save();
 
-    //sets the canvas at middle of the screen from x and 0 from y (origin is at the top of inner dial),
-    //this will be the location where we want to paint the traingle which will function as the time selector.
-    canvas.translate(size.width / 2, 0.0);
+    final radius = size.height / 2;
+
+    //sets the canvas at the center
+    canvas.translate(radius, radius);
+    
+    //rotating canvas acording to current time
+    canvas.rotate(2 * math.pi * rotationPercent);
 
     //This will create the lines required to draw the triangle
     Path path = new Path();
-    path.moveTo(0.0, -10.0);
-    path.lineTo(10.0, 5.0);
-    path.lineTo(-10.0, 5.0);
+    path.moveTo(0.0, -radius - 10.0);
+    path.lineTo(10.0, -radius + 5.0);
+    path.lineTo(-10.0, -radius + 5.0);
     path.close();
 
     //This will draw the traingle by drawing all the paths and paint it with the dialArrowPaint we defined earlier.
