@@ -1,5 +1,5 @@
-import 'package:egg_timer/egg_timer.dart';
-import 'package:egg_timer/egg_timer_knob.dart';
+import 'egg_timer.dart';
+import 'egg_timer_knob.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 

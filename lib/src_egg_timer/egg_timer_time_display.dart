@@ -1,4 +1,4 @@
-import 'package:egg_timer/egg_timer.dart';
+import 'egg_timer.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
