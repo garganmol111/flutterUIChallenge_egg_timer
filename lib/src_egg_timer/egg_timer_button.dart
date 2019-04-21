@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 class EggTimerButton extends StatelessWidget {
-  const EggTimerButton({Key key, this.icon, this.text, this.onPressed}) : super(key: key);
+  EggTimerButton({Key key, this.icon, this.text, this.onPressed, this.color}) : super(key: key);
 
   final IconData icon;
   final String text;
   final Function() onPressed;
+  Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +33,7 @@ class EggTimerButton extends StatelessWidget {
           ],
         ),
       ),
+      color: color,
     );
   }
 }

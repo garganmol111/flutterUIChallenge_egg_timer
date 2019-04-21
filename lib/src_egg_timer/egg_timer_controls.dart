@@ -117,6 +117,7 @@ class _EggTimerControlsState extends State<EggTimerControls> with TickerProvider
             onPressed: widget.eggTimerState == EggTimerState.running
             ? widget.onPause
             : widget.onResume,
+            color: Colors.white,
           ),
         )
       ],
