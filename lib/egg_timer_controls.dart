@@ -88,7 +88,7 @@ class _EggTimerControlsState extends State<EggTimerControls> with TickerProvider
                 onPressed: widget.onRestart,
               ),
 
-              Expanded(child: Container(),),
+              Expanded(child: Container()),
 
               //Reset button
               EggTimerButton(

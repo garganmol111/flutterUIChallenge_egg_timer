@@ -80,6 +80,7 @@ class _MyAppState extends State<MyApp> {
                     ticksPerSection: 5,
                     onTimeSelected: _onTimeSelected,
                     onDialStopTurning: _onDialStopTurning,
+                    eggTimerState: eggTimer.state,
                   ),
 
                   Expanded(

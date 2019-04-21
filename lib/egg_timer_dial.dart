@@ -1,3 +1,4 @@
+import 'package:egg_timer/egg_timer.dart';
 import 'package:egg_timer/egg_timer_knob.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
@@ -8,11 +9,13 @@ final Color GRADIENT_TOP = const Color(0xFFF5F5F5);
 final Color GRADIENT_BOTTOM = const Color(0xFFE8E8E8);
 
 class EggTimerDial extends StatefulWidget {
+
   final Duration currentTime;
   final Duration maxTime;
   final int ticksPerSection;
   final Function(Duration) onTimeSelected;
   final Function(Duration) onDialStopTurning;
+  final EggTimerState eggTimerState;
 
   EggTimerDial({
     Key key,
@@ -20,20 +23,62 @@ class EggTimerDial extends StatefulWidget {
     this.maxTime = const Duration(minutes: 35),
     this.ticksPerSection = 5,
     this.onTimeSelected,
-    this.onDialStopTurning
+    this.onDialStopTurning,
+    this.eggTimerState
   }) : super(key: key);
 
   _EggTimerDialState createState() => _EggTimerDialState();
 }
 
-class _EggTimerDialState extends State<EggTimerDial> {
-  // % rotation according to the current time
+class _EggTimerDialState extends State<EggTimerDial> with TickerProviderStateMixin{
+
+  static const RESET_SPEED_PERCENT_PER_SECOND = 4.0;
+
+  EggTimerState prevEggTimerState;
+  double prevRotationPercent = 0.0;
+  AnimationController resetToZeroController;
+  Animation resettingAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    resetToZeroController = new AnimationController(vsync: this);
+  }
+
+  @override
+  void dispose() {
+    resetToZeroController.dispose();
+    super.dispose();
+  }
+
+  // percent rotation according to the current time
   _rotationPercent() {
     return widget.currentTime.inSeconds / widget.maxTime.inSeconds;
   }
 
   @override
   Widget build(BuildContext context) {
+
+    if(widget.currentTime.inSeconds == 0
+      && prevEggTimerState != EggTimerState.ready) {
+        resettingAnimation = Tween(begin: prevRotationPercent, end: 0.0)
+          .animate(resetToZeroController)
+          ..addListener(() => setState(() {}))
+          ..addStatusListener((status) {
+            if(status == AnimationStatus.completed) {
+              setState(() => resettingAnimation = null);
+            }
+          });
+        resetToZeroController.duration = Duration(
+          milliseconds: ((prevRotationPercent / RESET_SPEED_PERCENT_PER_SECOND) * 1000).round()
+        );
+        resetToZeroController.forward(from: 0.0);
+      }
+
+    prevRotationPercent = _rotationPercent();
+    prevEggTimerState = widget.eggTimerState;
+
     return DialTurnGestureDetector(
       currentTime: widget.currentTime,
       maxTime: widget.maxTime,
@@ -82,7 +127,9 @@ class _EggTimerDialState extends State<EggTimerDial> {
                     Padding(
                       padding: const EdgeInsets.all(65.0),
                       child: EggTimerDialKnob(
-                        rotationPercent: _rotationPercent(),
+                        rotationPercent: resettingAnimation == null 
+                        ? _rotationPercent()
+                        : resettingAnimation.value,
                       ),
                     ),
                   ],
@@ -130,7 +177,8 @@ class _DialTurnGestureDetectorState extends State<DialTurnGestureDetector> {
     if(startDragCoord != null) {
 
       //calculates the angle difference b/w start position and end position, wil be used when moving time selector.
-      final andgleDiff = coord.angle - startDragCoord.angle;
+      var andgleDiff = coord.angle - startDragCoord.angle;
+      andgleDiff = andgleDiff >= 0.0 ? andgleDiff : andgleDiff + (2 * math.pi); //to make the angles positive
       final anglePercent = andgleDiff / (2 * math.pi);
       final timeDiffInSeconds = (anglePercent * widget.maxTime.inSeconds).round();
       selectedTime = Duration(seconds: startDragTime.inSeconds + timeDiffInSeconds);
@@ -138,6 +186,7 @@ class _DialTurnGestureDetectorState extends State<DialTurnGestureDetector> {
       widget.onTimeSelected(selectedTime);
     }
   }
+
 
   _onRadialDragEnd() {
     widget.onDialStopTurning(selectedTime);
