@@ -87,7 +87,29 @@ class _MyAppState extends State<MyApp> {
                   ),
 
                   //from egg_timer_controls.dart which contains the Restart, Reset and Pause buttons
-                  EggTimerControls()
+                  EggTimerControls(
+                    eggTimerState: eggTimer.state,
+                    onPause: () {
+                      setState(() {
+                       eggTimer.pause(); 
+                      });
+                    },
+                    onResume: () {
+                      setState(() {
+                       eggTimer.resume(); 
+                      });
+                    },
+                    onRestart: () {
+                      setState(() {
+                       eggTimer.restart(); 
+                      });
+                    },
+                    onReset: () {
+                      setState(() {
+                       eggTimer.reset(); 
+                      });
+                    },
+                  )
                 ],
               ),
             ),
