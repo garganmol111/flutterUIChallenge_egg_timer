@@ -1,16 +1,6 @@
-# egg_timer
+# Flutter UI Challenge: Egg Timer
 
-A new Flutter project.
+In this flutter UI challenge, I have attempted to recreate the following timer app UI created by ultranoir at dribble:
+https://dribbble.com/shots/2764686-Original-timer-app-UX-interaction
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.io/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.io/docs/cookbook)
-
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.io/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+![Screen Capture][(https://github.com/garganmol111/flutter_challenge_material_page_reveal/blob/master/capture.gif](https://github.com/garganmol111/flutterUIChallenge_egg_timer/blob/master/capture.gif))
