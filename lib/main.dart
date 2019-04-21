@@ -21,7 +21,7 @@ class _MyAppState extends State<MyApp> {
 
   _MyAppState()  {
     eggTimer = new EggTimer(
-      maxTime: const Duration(minutes: 10),
+      maxTime: const Duration(minutes: 35),
       onTimerUpdate: _onTimerUpdate,
     );
   }
@@ -41,6 +41,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  //refresh state when timer is updated
   _onTimerUpdate() {
     setState(() {});
   }
@@ -66,7 +67,11 @@ class _MyAppState extends State<MyApp> {
               child: Column(
                 children: <Widget>[
                   //from egg_timer_time_display.dart, this widget handles the time display
-                  EggTimerTimeDisplay(),
+                  EggTimerTimeDisplay(
+                    eggTimerState: eggTimer.state,
+                    selectionTime: eggTimer.lastStartTime,
+                    countdownTime: eggTimer.currentTime,
+                  ),
 
                   //from egg_timer_dial.dart, this widget handles the timer dial
                   EggTimerDial(

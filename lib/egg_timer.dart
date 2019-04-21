@@ -22,24 +22,26 @@ class EggTimer {
   set currentTime(newTime) {
     if(state == EggTimerState.ready) {
       _currentTime = newTime;
+      lastStartTime = _currentTime;
     }
   }
 
+  //resumes the timer from it's previous position
   resume() {
     state = EggTimerState.running;
-    lastStartTime = _currentTime;
+    
     stopwatch.start();
 
     _tick();
   }
 
+  //pauses the timer
   pause() {
 
   }
 
   //run a second from current, recompute the current time
   _tick() {
-    print('current time: ${_currentTime.inSeconds}');
     _currentTime = lastStartTime - stopwatch.elapsed;
 
     
